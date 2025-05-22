@@ -9,11 +9,11 @@ import time
 
 from tqdm import tqdm
 import types
-import torch
+# import torch
 
 # Prevent Streamlit from scanning torch.classes
-if isinstance(torch.classes, types.ModuleType):
-    torch.classes.__path__ = []
+# if isinstance(torch.classes, types.ModuleType):
+#     torch.classes.__path__ = []
 ## ONLINE STREAMLIT DEPENDENCIES ###
 
 # Read media database
