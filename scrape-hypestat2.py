@@ -35,15 +35,18 @@ def scrape_hypestat(website_url):
 
         # Get unique visitor
         dailyvisitor_element = soup.select_one('#traffic > dl:nth-child(4) > dd:nth-child(2)')
-        dailyvisitor = dailyvisitor_element.text.strip() if dailyvisitor_element else None
+        dailyvisitor = dailyvisitor_element.text.strip() if dailyvisitor_element else "0"
+        dailyvisitor = "0" if dailyvisitor.lower() == "n/a" else dailyvisitor
 
         # Get page view
         dailyview_element = soup.select_one('#traffic > dl:nth-child(4) > dd:nth-child(8)')
-        dailyview = dailyview_element.text.strip() if dailyview_element else None
+        dailyview = dailyview_element.text.strip() if dailyview_element else "0"
+        dailyview = "0" if dailyview.lower() == "n/a" else dailyview
 
         # Get monthly unique visitor semrush
         monthlyvisitsem_element = soup.select_one('#traffic > dl:nth-child(7) > dd:nth-child(10)')
-        monthlyvisitsem = monthlyvisitsem_element.text.strip() if monthlyvisitsem_element else None
+        monthlyvisitsem = monthlyvisitsem_element.text.strip() if monthlyvisitsem_element else "0"
+        monthlyvisitsem = "0" if monthlyvisitsem.lower() == "n/a" else monthlyvisitsem
 
         return {
             'Website': website_url,
