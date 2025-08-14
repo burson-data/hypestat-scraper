@@ -43,8 +43,8 @@ def scrape_hypestat(website_url):
         dailyview = dailyview_element.text.strip() if dailyview_element else "0"
         dailyview = "0" if dailyview.lower() == "n/a" else dailyview
 
-        # Get monthly unique visitor semrush
-        monthlyvisitsem_element = soup.select_one('#traffic > dl:nth-child(7) > dd:nth-child(10)')
+        # Get monthly unique visitor semrush -> for now changed to Monthly Visitors (not Unique)
+        monthlyvisitsem_element = soup.select_one('#traffic > dl:nth-child(4) > dd:nth-child(4)')
         monthlyvisitsem = monthlyvisitsem_element.text.strip() if monthlyvisitsem_element else "0"
         monthlyvisitsem = "0" if monthlyvisitsem.lower() == "n/a" else monthlyvisitsem
 
@@ -52,7 +52,7 @@ def scrape_hypestat(website_url):
             'Website': website_url,
             'Est. Reach': dailyvisitor,
             'Est. Impressions': dailyview,
-            'Monthly Unique Visitors': monthlyvisitsem,
+            'Monthly Visitors': monthlyvisitsem,
             'Status': "OK"  # Add status to the result
         }
 
