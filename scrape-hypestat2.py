@@ -168,7 +168,7 @@ elif menu == "How to use":
     3. Jika berhasil, hasil scraping bisa langsung diunduh dalam format **Excel**.
     """)
     
-    elif menu == "About":
+elif menu == "About":
     st.title("About")
     st.markdown("""
     ### Burson Hypestat Scraper v0.0.2
