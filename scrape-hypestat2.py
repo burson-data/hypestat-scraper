@@ -41,7 +41,7 @@ try:
     monthlyvisitsem = monthlyvisitsem_element.text.strip() if monthlyvisitsem_element else "0"
     monthlyvisitsem = "0" if monthlyvisitsem.lower() == "n/a" else monthlyvisitsem
 
-return {
+    return {
         'Website': website_url,
         'Est. Reach': dailyvisitor,
         'Est. Impressions': dailyview,
