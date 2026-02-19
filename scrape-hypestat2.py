@@ -7,65 +7,62 @@ from streamlit_option_menu import option_menu
 import io
 import time
 
-from tqdm import tqdm
-import types
-# import torch
-
-# Prevent Streamlit from scanning torch.classes
-# if isinstance(torch.classes, types.ModuleType):
-#     torch.classes.__path__ = []
-## ONLINE STREAMLIT DEPENDENCIES ###
-
-# Read media database
-# URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vQwxy1jmenWfyv49wzEwrp3gYE__u5JdhvVjn1c0zMUxDL6DTaU_t4Yo03qRlS4JaJWE3nK9_dIQMYZ/pub?output=csv'.format()
-# media_db=pd.read_csv(URL).fillna(0)
-
 # ================================
 # FUNCTION ZONE
 # ================================
 
-# Download article & analyze sentiment
 def scrape_hypestat(website_url):
-    hypestat_url = f"https://hypestat.com/info/{website_url}"
-    try:
-        response = requests.get(hypestat_url)
-        response.raise_for_status()  # Raise HTTPError for bad responses (4xx or 5xx)
+hypestat_url = f"https://hypestat.com/info/{website_url}"
 
-        soup = BeautifulSoup(response.content, 'html.parser')
+# Headers untuk bypass 403 Forbidden
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+    'Accept-Language': 'en-US,en;q=0.5',
+    'Accept-Encoding': 'gzip, deflate, br',
+    'Connection': 'keep-alive',
+    'Upgrade-Insecure-Requests': '1',
+}
 
-        # Get unique visitor
-        dailyvisitor_element = soup.select_one('#traffic > dl:nth-child(4) > dd:nth-child(2)')
-        dailyvisitor = dailyvisitor_element.text.strip() if dailyvisitor_element else "0"
-        dailyvisitor = "0" if dailyvisitor.lower() == "n/a" else dailyvisitor
+try:
+    response = requests.get(hypestat_url, headers=headers, timeout=15)
+    response.raise_for_status()
 
-        # Get page view
-        dailyview_element = soup.select_one('#traffic > dl:nth-child(4) > dd:nth-child(8)')
-        dailyview = dailyview_element.text.strip() if dailyview_element else "0"
-        dailyview = "0" if dailyview.lower() == "n/a" else dailyview
+    soup = BeautifulSoup(response.content, 'html.parser')
 
-        # Get monthly unique visitor semrush -> for now changed to Monthly Visitors (not Unique)
-        monthlyvisitsem_element = soup.select_one('#traffic > dl:nth-child(4) > dd:nth-child(4)')
-        monthlyvisitsem = monthlyvisitsem_element.text.strip() if monthlyvisitsem_element else "0"
-        monthlyvisitsem = "0" if monthlyvisitsem.lower() == "n/a" else monthlyvisitsem
+    # Get unique visitor
+    dailyvisitor_element = soup.select_one('#traffic > dl:nth-child(4) > dd:nth-child(2)')
+    dailyvisitor = dailyvisitor_element.text.strip() if dailyvisitor_element else "0"
+    dailyvisitor = "0" if dailyvisitor.lower() == "n/a" else dailyvisitor
 
-        return {
-            'Website': website_url,
-            'Est. Reach': dailyvisitor,
-            'Est. Impressions': dailyview,
-            'Monthly Visitors': monthlyvisitsem,
-            'Status': "OK"  # Add status to the result
-        }
+    # Get page view
+    dailyview_element = soup.select_one('#traffic > dl:nth-child(4) > dd:nth-child(8)')
+    dailyview = dailyview_element.text.strip() if dailyview_element else "0"
+    dailyview = "0" if dailyview.lower() == "n/a" else dailyview
 
-    except Exception as e:
-        err_msg = str(e)
-        print(f"❌ Failed processing {website_url}: {err_msg}")
-        return {
-            'Website': website_url,
-            'Est. Reach': None,
-            'Est. Impressions': None,
-            'Monthly Unique Visitors': None,
-            'Status': f"ERROR: {err_msg[:80]}"  # Add error status
-        }
+    # Get monthly unique visitor semrush -> for now changed to Monthly Visitors (not Unique)
+    monthlyvisitsem_element = soup.select_one('#traffic > dl:nth-child(4) > dd:nth-child(4)')
+    monthlyvisitsem = monthlyvisitsem_element.text.strip() if monthlyvisitsem_element else "0"
+    monthlyvisitsem = "0" if monthlyvisitsem.lower() == "n/a" else monthlyvisitsem
+
+    return {
+        'Website': website_url,
+        'Est. Reach': dailyvisitor,
+        'Est. Impressions': dailyview,
+        'Monthly Visitors': monthlyvisitsem,
+        'Status': "OK"
+    }
+
+except Exception as e:
+    err_msg = str(e)
+    print(f"❌ Failed processing {website_url}: {err_msg}")
+    return {
+        'Website': website_url,
+        'Est. Reach': None,
+        'Est. Impressions': None,
+        'Monthly Visitors': None,
+        'Status': f"ERROR: {err_msg[:80]}"
+    }
 
 # ================================
 # STREAMLIT UI
@@ -74,132 +71,124 @@ st.set_page_config(page_title="Burson Hypestat Scraper", layout="centered")
 
 # Sidebar Navigation
 with st.sidebar:
-    menu = option_menu(
-        menu_title="Main Menu",
-        options=["How to use", "Hypestat Scraper", "About"],
-        icons=["question-circle-fill", "search", "diagram-3"],
-        menu_icon="cast",  # optional
-        default_index=1,  # optional
-        styles={
-            "icon": {"color": "orange"},
-            "nav-link": {
-                "--hover-color": "#eee",
-            },
-            "nav-link-selected": {"background-color": "green"},
+menu = option_menu(
+    menu_title="Main Menu",
+    options=["How to use", "Hypestat Scraper", "About"],
+    icons=["question-circle-fill", "search", "diagram-3"],
+    menu_icon="cast",
+    default_index=1,
+    styles={
+        "icon": {"color": "orange"},
+        "nav-link": {
+            "--hover-color": "#eee",
         },
+        "nav-link-selected": {"background-color": "green"},
+    },
+)
+
+# Hypestat Scraper Page
+if menu == "Hypestat Scraper":
+st.title("Hypestat Scraper")
+st.markdown("Pilih metode input dan isi dengan URL website media yang diinginkan. Contoh: 'google.com'")
+st.markdown("Apabila menggunakan metode input excel, harap pastikan ada kolom dengan nama 'Link'")
+
+with st.container(border=True):
+    input_method = st.radio(
+        "Select Input Method:",
+        options=["Excel File", "Text Input"],
+        horizontal=True
     )
 
-# NEW: Separate NLP Processor
-if menu == "Hypestat Scraper":
-    st.title("Hypestat Scraper")
-    st.markdown("Pilih metode input dan isi dengan URL website media yang diinginkan. Contoh: 'google.com'")
-    st.markdown(  "Apabila menggunakan metode input excel, harap pastikan ada kolom dengan nama 'Link'") 
+    df = None
 
-    with st.container(border=True):
-        input_method = st.radio(
-            "Select Input Method:",
-            options=["Excel File", "Text Input"],
-            horizontal=True
+    if input_method == "Excel File":
+        uploaded_file = st.file_uploader("Upload Excel file", type=["xlsx"])
+
+        if uploaded_file is not None:
+            try:
+                df = pd.read_excel(uploaded_file)
+                with st.expander("📂 Preview File", expanded=False):
+                    st.write(df.head())
+                if 'Link' not in df.columns:
+                    st.error("❌ 'Link' column not found in the Excel file.")
+                    df = None
+            except Exception as e:
+                st.error(f"❌ Error loading file: {e}")
+                df = None
+    else:
+        url_input = st.text_area("Enter website URLs (one per line):", height=200)
+        if url_input:
+            website_urls = [url.strip() for url in url_input.splitlines() if url.strip()]
+            df = pd.DataFrame({'Link': website_urls})
+        else:
+            df = None
+
+    st.divider()
+
+    run_scraper = False
+    if df is not None:
+        run_scraper = st.button("Jalankan")
+
+# Process and display results
+if df is not None and run_scraper:
+    if 'Link' not in df.columns:
+        st.error("❌ 'Link' column is required.")
+    else:
+        results = []
+        progress_bar = st.progress(0)
+        total_sites = len(df)
+        error_count = 0
+
+        for i, row in df.iterrows():
+            website_url = row['Link']
+            progress_percent = (i + 1) / total_sites
+            progress_bar.progress(progress_percent)
+            result = scrape_hypestat(website_url)
+            results.append(result)
+            if result['Status'].startswith("ERROR"):
+                error_count += 1
+            time.sleep(2)
+
+        results_df = pd.DataFrame(results)
+        st.dataframe(results_df)
+        progress_bar.empty()
+
+        if error_count > 0:
+            st.warning(f"⚠️ Scraping selesai. {error_count} dari {total_sites} media gagal diproses.")
+        else:
+            st.success("✅ Scraping selesai tanpa kesalahan.")
+
+        to_download = io.BytesIO()
+        results_df.to_excel(to_download, index=False)
+        to_download.seek(0)
+
+        st.download_button(
+            "📥 Download Excel",
+            data=to_download,
+            file_name="hypestat_data.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
 
-        df = None  # Initialize df to None
-
-        if input_method == "Excel File":
-            uploaded_file = st.file_uploader("Upload Excel file", type=["xlsx"])
-
-            if uploaded_file is not None:
-                try:
-                    df = pd.read_excel(uploaded_file)
-                    with st.expander("📂 Preview File", expanded=False):
-                        st.write(df.head())
-                    if 'Link' not in df.columns:
-                        st.error("❌ 'Link' column not found in the Excel file.")
-                        df = None  # Set df to None if 'Link' column is missing
-                except Exception as e:
-                    st.error(f"❌ Error loading file: {e}")
-                    df = None
-        else:  # input_method == "Text Input"
-            url_input = st.text_area("Enter website URLs (one per line):", height=200)
-            if url_input:
-                website_urls = [url.strip() for url in url_input.splitlines() if url.strip()]
-                df = pd.DataFrame({'Link': website_urls})  # Create DataFrame from text input
-            else:
-                df = None
-
-        st.divider()
-
-        run_scraper = False
-        if df is not None:
-            run_scraper = st.button("Jalankan")
-
-    # Process and display results if button was clicked
-    if df is not None and run_scraper:
-        # Ensure 'Link' column exists, even if created from text input
-        if 'Link' not in df.columns:
-            st.error("❌ 'Link' column is required. Please provide URLs with a 'Link' column (Excel) or in the text input.")
-        else:
-            # Scrape data for each URL
-            results = []
-            progress_bar = st.progress(0)
-            total_sites = len(df)
-            error_count = 0  # Initialize error count
-
-            for i, row in df.iterrows():
-                website_url = row['Link']
-                progress_percent = (i + 1) / total_sites
-                progress_bar.progress(progress_percent)
-                result = scrape_hypestat(website_url)
-                results.append(result)
-                if result['Status'].startswith("ERROR"):
-                    error_count += 1
-                time.sleep(2)  # Be polite!
-
-            # Create a DataFrame from the results
-            results_df = pd.DataFrame(results)
-
-            # Display the DataFrame
-            st.dataframe(results_df)
-
-            # Clear the progress bar
-            progress_bar.empty()
-
-            # Display success/warning message
-            if error_count > 0:
-                st.warning(f"⚠️ Scraping selesai. {error_count} dari {total_sites} media gagal diproses.")
-            else:
-                st.success("✅ Scraping selesai tanpa kesalahan.")
-
-            # Provide a download button
-            to_download = io.BytesIO()
-            results_df.to_excel(to_download, index=False)
-            to_download.seek(0)
-
-            st.download_button(
-                "📥 Download Excel",
-                data=to_download,
-                file_name="hypestat_data.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            )
-
 elif menu == "How to use":
-    st.title("📖 How to Use")
-    st.markdown("""
-    ### Petunjuk Penggunaan
+st.title("📖 How to Use")
+st.markdown("""
+### Petunjuk Penggunaan
 
-    1. Pilih metode input:
-    *   **Excel File:** Upload file Excel yang berisi link-link media yang ingin diambil statnya. Pastikan ada kolom bernama 'Link'.
-    *   **Text Input:** Masukkan link-link media yang ingin diambil statnya, satu link per baris.
-    2. Klik **Jalankan**, tunggu hingga proses selesai.
-    3. Jika berhasil, hasil scraping bisa langsung diunduh dalam format **Excel**.
-    """)
+1. Pilih metode input:
+*   **Excel File:** Upload file Excel yang berisi link-link media yang ingin diambil statnya. Pastikan ada kolom bernama 'Link'.
+*   **Text Input:** Masukkan link-link media yang ingin diambil statnya, satu link per baris.
+2. Klik **Jalankan**, tunggu hingga proses selesai.
+3. Jika berhasil, hasil scraping bisa langsung diunduh dalam format **Excel**.
+""")
 
 elif menu == "About":
-    st.title("ℹ️ About")
-    st.markdown("""
-    ### Burson Hypestat Scraper v0.0.1
+st.title("ℹ️ About")
+st.markdown("""
+### Burson Hypestat Scraper v0.0.2
 
-    **Release Note:**
-    - ✅ Basic scraping untuk data Hypestat
+**Release Note:**
+- ✅ Basic scraping untuk data Hypestat
+- ✅ Fix 403 Forbidden error dengan headers
 
-    **Made by**: Jay and Naomi ✨
-    """)
+**Made by**: Jay and Naomi ✨
+""")
