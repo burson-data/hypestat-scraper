@@ -1,17 +1,21 @@
 import streamlit as st
 import pandas as pd
-import cloudscraper
+from curl_cffi import requests
 from bs4 import BeautifulSoup
 from streamlit_option_menu import option_menu
 import io
 import time
 
 
-def scrape_hypestat(website_url, scraper):
+def scrape_hypestat(website_url):
     hypestat_url = f"https://hypestat.com/info/{website_url}"
 
     try:
-        response = scraper.get(hypestat_url, timeout=15)
+        response = requests.get(
+            hypestat_url,
+            impersonate="chrome110",
+            timeout=15,
+        )
         response.raise_for_status()
         soup = BeautifulSoup(response.content, "html.parser")
 
@@ -88,8 +92,7 @@ with st.sidebar:
 if menu == "Hypestat Scraper":
     st.title("Hypestat Scraper")
     st.markdown(
-        "Pilih metode input dan isi dengan URL website media. "
-        "Contoh: 'google.com'"
+        "Pilih metode input. Contoh URL: 'detik.com' (tanpa https://)"
     )
 
     input_method = st.radio(
@@ -136,14 +139,6 @@ if menu == "Hypestat Scraper":
     run_scraper = st.button("Jalankan") if df is not None else False
 
     if df is not None and run_scraper:
-        scraper = cloudscraper.create_scraper(
-            browser={
-                "browser": "chrome",
-                "platform": "windows",
-                "mobile": False,
-            }
-        )
-
         results = []
         progress_bar = st.progress(0)
         total_sites = len(df)
@@ -153,7 +148,7 @@ if menu == "Hypestat Scraper":
             website_url = row["Link"]
             progress_bar.progress((i + 1) / total_sites)
 
-            result = scrape_hypestat(website_url, scraper)
+            result = scrape_hypestat(website_url)
             results.append(result)
 
             if result["Status"].startswith("ERROR"):
@@ -198,6 +193,6 @@ elif menu == "How to use":
 elif menu == "About":
     st.title("About")
     st.markdown(
-        "Burson Hypestat Scraper v0.0.3\n\n"
+        "Burson Hypestat Scraper v0.0.4\n\n"
         "Made by: Jay and Naomi"
     )
