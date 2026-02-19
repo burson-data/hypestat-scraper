@@ -77,9 +77,9 @@ with st.sidebar:
 )
 
 if menu == "Hypestat Scraper":
-st.title("Hypestat Scraper")
-st.markdown("Pilih metode input dan isi dengan URL website media yang diinginkan. Contoh: 'google.com'")
-st.markdown("Apabila menggunakan metode input excel, harap pastikan ada kolom dengan nama 'Link'")
+    st.title("Hypestat Scraper")
+    st.markdown("Pilih metode input dan isi dengan URL website media yang diinginkan. Contoh: 'google.com'")
+    st.markdown("Apabila menggunakan metode input excel, harap pastikan ada kolom dengan nama 'Link'")
 
 with st.container(border=True):
     input_method = st.radio(
