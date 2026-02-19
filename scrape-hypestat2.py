@@ -1,23 +1,17 @@
 import streamlit as st
 import pandas as pd
-import requests
+import cloudscraper
 from bs4 import BeautifulSoup
 from streamlit_option_menu import option_menu
 import io
 import time
 
 
-def scrape_hypestat(website_url):
+def scrape_hypestat(website_url, scraper):
     hypestat_url = f"https://hypestat.com/info/{website_url}"
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-        "Accept-Language": "en-US,en;q=0.5",
-        "Connection": "keep-alive",
-    }
 
     try:
-        response = requests.get(hypestat_url, headers=headers, timeout=15)
+        response = scraper.get(hypestat_url, timeout=15)
         response.raise_for_status()
         soup = BeautifulSoup(response.content, "html.parser")
 
@@ -25,14 +19,22 @@ def scrape_hypestat(website_url):
             "#traffic > dl:nth-child(4) > dd:nth-child(2)"
         )
         dailyvisitor = (
-            dailyvisitor_element.text.strip() if dailyvisitor_element else "0"
+            dailyvisitor_element.text.strip()
+            if dailyvisitor_element
+            else "0"
         )
-        dailyvisitor = "0" if dailyvisitor.lower() == "n/a" else dailyvisitor
+        dailyvisitor = (
+            "0" if dailyvisitor.lower() == "n/a" else dailyvisitor
+        )
 
         dailyview_element = soup.select_one(
             "#traffic > dl:nth-child(4) > dd:nth-child(8)"
         )
-        dailyview = dailyview_element.text.strip() if dailyview_element else "0"
+        dailyview = (
+            dailyview_element.text.strip()
+            if dailyview_element
+            else "0"
+        )
         dailyview = "0" if dailyview.lower() == "n/a" else dailyview
 
         monthlyvisitsem_element = soup.select_one(
@@ -44,7 +46,9 @@ def scrape_hypestat(website_url):
             else "0"
         )
         monthlyvisitsem = (
-            "0" if monthlyvisitsem.lower() == "n/a" else monthlyvisitsem
+            "0"
+            if monthlyvisitsem.lower() == "n/a"
+            else monthlyvisitsem
         )
 
         return {
@@ -132,6 +136,14 @@ if menu == "Hypestat Scraper":
     run_scraper = st.button("Jalankan") if df is not None else False
 
     if df is not None and run_scraper:
+        scraper = cloudscraper.create_scraper(
+            browser={
+                "browser": "chrome",
+                "platform": "windows",
+                "mobile": False,
+            }
+        )
+
         results = []
         progress_bar = st.progress(0)
         total_sites = len(df)
@@ -141,13 +153,13 @@ if menu == "Hypestat Scraper":
             website_url = row["Link"]
             progress_bar.progress((i + 1) / total_sites)
 
-            result = scrape_hypestat(website_url)
+            result = scrape_hypestat(website_url, scraper)
             results.append(result)
 
             if result["Status"].startswith("ERROR"):
                 error_count += 1
 
-            time.sleep(2)
+            time.sleep(3)
 
         results_df = pd.DataFrame(results)
         st.dataframe(results_df)
@@ -186,6 +198,6 @@ elif menu == "How to use":
 elif menu == "About":
     st.title("About")
     st.markdown(
-        "Burson Hypestat Scraper v0.0.2\n\n"
+        "Burson Hypestat Scraper v0.0.3\n\n"
         "Made by: Jay and Naomi"
     )
