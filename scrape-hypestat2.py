@@ -63,7 +63,7 @@ except Exception as e:
 st.set_page_config(page_title="Burson Hypestat Scraper", layout="centered")
 
 with st.sidebar:
-menu = option_menu(
+    menu = option_menu(
     menu_title="Main Menu",
     options=["How to use", "Hypestat Scraper", "About"],
     icons=["question-circle-fill", "search", "diagram-3"],
