@@ -157,25 +157,25 @@ if df is not None and run_scraper:
         )
 
 elif menu == "How to use":
-st.title("How to Use")
-st.markdown("""
-### Petunjuk Penggunaan
-
-1. Pilih metode input:
-*   **Excel File:** Upload file Excel yang berisi link-link media. Pastikan ada kolom bernama 'Link'.
-*   **Text Input:** Masukkan link-link media, satu link per baris.
-2. Klik **Jalankan**, tunggu hingga proses selesai.
-3. Jika berhasil, hasil scraping bisa langsung diunduh dalam format **Excel**.
-""")
-
-elif menu == "About":
-st.title("About")
-st.markdown("""
-### Burson Hypestat Scraper v0.0.2
-
-**Release Note:**
-- Basic scraping untuk data Hypestat
-- Fix 403 Forbidden error dengan headers
-
-**Made by**: Jay and Naomi
-""")
+    st.title("How to Use")
+    st.markdown("""
+    ### Petunjuk Penggunaan
+    
+    1. Pilih metode input:
+    *   **Excel File:** Upload file Excel yang berisi link-link media. Pastikan ada kolom bernama 'Link'.
+    *   **Text Input:** Masukkan link-link media, satu link per baris.
+    2. Klik **Jalankan**, tunggu hingga proses selesai.
+    3. Jika berhasil, hasil scraping bisa langsung diunduh dalam format **Excel**.
+    """)
+    
+    elif menu == "About":
+    st.title("About")
+    st.markdown("""
+    ### Burson Hypestat Scraper v0.0.2
+    
+    **Release Note:**
+    - Basic scraping untuk data Hypestat
+    - Fix 403 Forbidden error dengan headers
+    
+    **Made by**: Jay and Naomi
+    """)
